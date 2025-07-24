@@ -1,0 +1,74 @@
+// This is your Prisma schema file.
+// To apply this to your database, run: npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL") // Your MongoDB connection string in a .env file
+}
+
+// Represents a single, unique chat relationship.
+model ChatSession {
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  botType           String     // 'girlfriend' or 'boyfriend'
+  botName           String
+  userName          String
+  relationshipStage String     // 'dating', 'committed', 'engaged', 'married'
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  // Each session has its own memory and message history.
+  messages          Message[]
+  botMemory         BotMemory?
+
+  @@map("chat_sessions")
+}
+
+// Stores a single message in a chat session.
+model Message {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId String      @db.ObjectId
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  role      String      // 'user' or 'model' (for the AI)
+  content   String
+  timestamp DateTime    @default(now())
+
+  // These fields are populated by the agent's analysis.
+  sentiment String?     // 'positive', 'negative', 'neutral', 'mixed'
+  topics    String[]    // e.g., ["work", "future", "feelings"]
+
+  @@map("messages")
+}
+
+// The AI's long-term memory for a specific chat session.
+model BotMemory {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId String      @unique @db.ObjectId
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Stores what the AI learns about the user's preferences.
+  // e.g., { "interests": ["movies", "hiking"], "communication_style": "likes emojis" }
+  userPreferences Json @default("{}")
+
+  // Stores important dates and memories.
+  // e.g., { "anniversary": "2025-08-10", "first_date_story": "We met at a coffee shop..." }
+  relationshipData Json @default("{}")
+
+  // Tracks the overall emotional tone and common topics.
+  // e.g., { "frequent_topics": ["work", "travel"], "emotional_patterns": "often stressed on Mondays" }
+  conversationHistory Json @default("{}")
+
+  // Tracks the last few topics to avoid repetition.
+  recentTopics String[] @default([])
+
+  // The last detected emotional state of the conversation.
+  emotionalState String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("bot_memory")
+}
