@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// --- USER MODEL ---
+model User {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  email     String       @unique
+  name      String?
+  password  String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  longurl   LongUrl[]
+  url       Url[]
+  sessions  Session[]
+  chatSessions ChatSession[]
+}
+
+// --- LONG URL MODEL ---
+model LongUrl {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  longurl   String
+  shorturl  ShortUrl?
+  userId    String    @db.ObjectId
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+// --- SHORT URL MODEL ---
+model ShortUrl {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  shorturl  String   @unique
+  longurlId String   @unique @db.ObjectId
+  longurl   LongUrl  @relation(fields: [longurlId], references: [id])
+}
+
+// --- URL MODEL ---
+model Url {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  longurl  String
+  shorturl String  @unique
+  userId   String  @db.ObjectId
+  user     User    @relation(fields: [userId], references: [id])
+}
+
+// --- SESSION MODEL ---
+model Session {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId  String   @unique @default(cuid()) // ✅ fixed
+  valid      Boolean  @default(true)
+  userAgent  String?
+  ip         String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+// --- CHAT SESSION MODEL ---
+model ChatSession {
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  botType           String
+  botName           String
+  relationshipStage String
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  userId            String     @db.ObjectId
+  user              User       @relation(fields: [userId], references: [id])
+
+  messages          Message[]
+  botMemory         BotMemory?
+
+  @@unique([userId, botType])
+}
+
+// --- MESSAGE MODEL ---
+model Message {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId String       @db.ObjectId
+  session   ChatSession  @relation(fields: [sessionId], references: [id])
+
+  role      String
+  content   String
+  timestamp DateTime     @default(now())
+
+  sentiment String?
+  topics    Json?
+}
+
+// --- BOT MEMORY MODEL ---
+model BotMemory {
+  id                  String       @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId           String       @unique @db.ObjectId
+  session             ChatSession  @relation(fields: [sessionId], references: [id])
+
+  userPreferences     Json?
+  relationshipData    Json?
+  conversationHistory Json?
+  recentTopics        Json?
+  emotionalState      String?
+  updatedAt           DateTime     @updatedAt
+}
