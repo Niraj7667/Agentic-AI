@@ -19,7 +19,7 @@ const app = express();
 // ✅ Middlewares
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://agentic-ai-pi-eight.vercel.app'],
+  origin: ['http://localhost:5173', 'https://agentic-ai-pi-eight.vercel.app','https://agentic-ai-36w5.vercel.app'],
   credentials: true,
 }));
 app.use(express.json());

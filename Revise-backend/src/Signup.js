@@ -41,8 +41,8 @@ export const Signup = async (req, res) => {
     // ✅ Set token in HttpOnly cookie
     res.cookie("access_token", token, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false, // Set to true in production with HTTPS
+      sameSite: "None", // Allows cross-origin cookies
+      secure: true,     // Required for HTTPS domains
     });
 
     console.log("✅ Signup token:", token);

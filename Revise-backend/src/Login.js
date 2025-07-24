@@ -41,8 +41,8 @@ export const Login = async (req, res) => {
     // ✅ Set token in HttpOnly cookie
     res.cookie("access_token", token, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: process.env.NODE_ENV === "production", // True in production with HTTPS
+      sameSite: "None", // Allows cross-origin cookies
+      secure: true,     // Required for HTTPS domains
     });
 
     console.log("✅ Login token:", token);
