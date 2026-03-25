@@ -278,27 +278,47 @@ const ChatScreen = ({ sessionConfig, onBack }) => {
   };
 
   return (
-    <div style={chatContainerStyle}>
-      <div style={chatHeaderStyle}>
+    <div style={{
+      ...chatContainerStyle,
+      display: 'flex',
+      flexDirection: 'column',
+      height: isMobile ? '100dvh' : '90vh',
+      boxShadow: isMobile ? 'none' : chatContainerStyle.boxShadow,
+      borderRadius: isMobile ? '0' : chatContainerStyle.borderRadius,
+      border: isMobile ? 'none' : chatContainerStyle.border,
+      position: 'relative',
+    }}>
+      {/* Header */}
+      <div style={{
+        ...chatHeaderStyle,
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        background: 'rgba(255,255,255,0.85)',
+        borderTopLeftRadius: isMobile ? 0 : 20,
+        borderTopRightRadius: isMobile ? 0 : 20,
+        boxShadow: isMobile ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+      }}>
         <button 
           onClick={onBack} 
           style={backButtonStyle}
-          onMouseEnter={(e) => {
-            e.target.style.color = 'var(--primary-color)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.color = 'var(--light-text-color)';
-          }}
+          aria-label="Back"
         >
           ←
         </button>
         <h2 style={headerTitleStyle}>Chat with {sessionConfig.botName}</h2>
       </div>
 
+      {/* Chat area */}
       <div
-        style={messagesStyle}
+        style={{
+          ...messagesStyle,
+          flex: 1,
+          paddingBottom: isMobile ? '90px' : '1.5rem', // leave space for sticky input
+          background: 'transparent',
+        }}
         ref={messagesContainerRef}
-        className={`chat-messages ${!isHistoryLoading ? 'loaded' : ''}`}
+        className={`chat-messages whatsapp-chat ${!isHistoryLoading ? 'loaded' : ''}`}
       >
         {isHistoryLoading ? (
           <ChatSkeleton />
@@ -329,29 +349,36 @@ const ChatScreen = ({ sessionConfig, onBack }) => {
             {messages.map((msg, idx) => (
               <div 
                 key={msg.id || idx} 
-                className={`message ${msg.role}`}
+                className={`message-bubble ${msg.role} whatsapp-bubble`}
                 style={{
                   display: 'flex',
                   maxWidth: isMobile ? '85%' : '80%',
                   animation: 'fadeIn 0.5s ease',
                   flexShrink: 0,
                   alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  marginBottom: '0.25rem',
                 }}
               >
                 <p style={{
                   margin: 0,
-                  padding: isMobile ? '0.7rem 1rem' : '0.8rem 1.2rem',
-                  borderRadius: '20px',
-                  lineHeight: '1.6',
+                  padding: isMobile ? '0.7rem 1.1rem' : '0.9rem 1.3rem',
+                  borderRadius: '18px',
+                  lineHeight: '1.7',
                   wordBreak: 'break-word',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                  fontSize: isMobile ? '0.9rem' : '1rem',
+                  boxShadow: msg.role === 'user'
+                    ? '0 1px 2px rgba(106,130,251,0.10)' : '0 1px 2px rgba(0,0,0,0.06)',
+                  fontSize: isMobile ? '1rem' : '1.05rem',
                   background: msg.role === 'user' 
                     ? 'var(--user-bubble-gradient)' 
                     : 'var(--model-bubble-color)',
                   color: msg.role === 'user' ? 'white' : 'var(--model-text-color)',
-                  borderBottomLeftRadius: msg.role === 'model' ? '5px' : '20px',
-                  borderBottomRightRadius: msg.role === 'user' ? '5px' : '20px',
+                  borderBottomLeftRadius: msg.role === 'model' ? '6px' : '18px',
+                  borderBottomRightRadius: msg.role === 'user' ? '6px' : '18px',
+                  borderTopRightRadius: msg.role === 'user' ? '6px' : '18px',
+                  borderTopLeftRadius: msg.role === 'model' ? '6px' : '18px',
+                  minWidth: '40px',
+                  minHeight: '32px',
+                  position: 'relative',
                 }}>
                   {msg.content}
                 </p>
@@ -362,13 +389,16 @@ const ChatScreen = ({ sessionConfig, onBack }) => {
 
         {isSending && (
           <div 
-            className="message model typing-indicator"
+            className="message-bubble model typing-indicator whatsapp-bubble"
             style={{
               alignSelf: 'flex-start',
               fontStyle: 'italic',
               color: 'var(--light-text-color)',
-              padding: isMobile ? '0.7rem 1rem' : '0.8rem 1.2rem',
-              fontSize: isMobile ? '0.85rem' : '1rem',
+              padding: isMobile ? '0.7rem 1.1rem' : '0.9rem 1.3rem',
+              fontSize: isMobile ? '0.95rem' : '1.05rem',
+              background: 'var(--model-bubble-color)',
+              borderRadius: '18px',
+              marginBottom: '0.25rem',
             }}
           >
             <p style={{ margin: 0 }}>{sessionConfig.botName} is typing...</p>
@@ -377,140 +407,81 @@ const ChatScreen = ({ sessionConfig, onBack }) => {
 
         {error && (
           <div 
-            className="message error"
+            className="message-bubble error whatsapp-bubble"
             style={{
               alignSelf: 'center',
-              width: '100%',
+              background: '#fee',
+              color: '#c33',
+              padding: '0.8rem 1.2rem',
+              borderRadius: '10px',
+              fontSize: isMobile ? '0.95rem' : '1.05rem',
+              marginBottom: '0.25rem',
             }}
           >
-            <p style={{
-              background: '#fbe9e7',
-              color: 'var(--error-color)',
-              width: '100%',
-              textAlign: 'center',
-              margin: 0,
-              padding: isMobile ? '0.7rem 1rem' : '0.8rem 1.2rem',
-              borderRadius: '15px',
-              fontSize: isMobile ? '0.9rem' : '1rem',
-            }}>
-              {error}
-            </p>
+            <p style={{ margin: 0 }}>{error}</p>
           </div>
         )}
+
         <div ref={messagesEndRef} />
       </div>
 
-      <form style={inputFormStyle} onSubmit={handleSendMessage}>
+      {/* Sticky input bar */}
+      <form 
+        onSubmit={handleSendMessage} 
+        style={{
+          ...inputFormStyle,
+          position: isMobile ? 'fixed' : 'sticky',
+          bottom: isMobile ? 0 : undefined,
+          left: isMobile ? 0 : undefined,
+          width: isMobile ? '100vw' : '100%',
+          zIndex: 20,
+          background: 'rgba(255,255,255,0.95)',
+          borderBottomLeftRadius: isMobile ? 0 : 20,
+          borderBottomRightRadius: isMobile ? 0 : 20,
+          boxShadow: isMobile ? '0 -2px 8px rgba(0,0,0,0.04)' : 'none',
+          margin: 0,
+        }}
+      >
         <input
           ref={inputRef}
+          type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          placeholder={isMobile ? "Type a message..." : "Say something..."}
-          disabled={isSending || isHistoryLoading}
-          style={inputStyle}
           onFocus={handleInputFocus}
-          onFocusCapture={(e) => {
-            e.target.style.outline = 'none';
+          placeholder="Type your message..."
+          disabled={isSending}
+          style={{
+            ...inputStyle,
+            fontSize: isMobile ? '1.05rem' : '1rem',
+            borderRadius: '25px',
+            marginRight: isMobile ? '0.5rem' : '1rem',
+          }}
+          onFocus={(e) => {
             e.target.style.borderColor = 'var(--primary-color)';
-            e.target.style.boxShadow = '0 0 0 4px var(--shadow-color)';
-            e.target.style.background = '#fff';
+            e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
+            handleInputFocus();
           }}
           onBlur={(e) => {
             e.target.style.borderColor = 'var(--border-color)';
             e.target.style.boxShadow = 'none';
-            e.target.style.background = '#f8f9fa';
           }}
         />
-        <button 
-          type="submit" 
-          disabled={isSending || isHistoryLoading || !userInput.trim()}
+        <button
+          type="submit"
+          disabled={!userInput.trim() || isSending}
           style={{
             ...sendButtonStyle,
-            background: (isSending || isHistoryLoading || !userInput.trim()) 
-              ? '#b3c1ff' 
-              : 'var(--primary-color)',
-            cursor: (isSending || isHistoryLoading || !userInput.trim()) 
-              ? 'not-allowed' 
-              : 'pointer',
-          }}
-          onMouseEnter={(e) => {
-            if (!e.target.disabled) {
-              e.target.style.background = 'var(--primary-hover-color)';
-              e.target.style.transform = 'scale(1.05)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!e.target.disabled) {
-              e.target.style.background = 'var(--primary-color)';
-              e.target.style.transform = 'scale(1)';
-            }
+            opacity: (!userInput.trim() || isSending) ? 0.6 : 1,
+            cursor: (!userInput.trim() || isSending) ? 'not-allowed' : 'pointer',
+            fontSize: isMobile ? '1.05rem' : '1rem',
+            borderRadius: '25px',
+            minWidth: isMobile ? '60px' : 'auto',
+            minHeight: isMobile ? '44px' : 'auto',
           }}
         >
-          {isMobile ? (isSending ? '...' : '➤') : (isSending ? 'Sending...' : 'Send')}
+          {isSending ? 'Sending...' : 'Send'}
         </button>
       </form>
-
-      {/* Mobile-specific CSS */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .chat-messages::-webkit-scrollbar {
-          width: ${isMobile ? '3px' : '6px'};
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-          background-color: #cbd5e0;
-          border-radius: 3px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-          background-color: #a0aec0;
-        }
-
-        /* Prevent zoom on iOS */
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-          select,
-          textarea,
-          input[type="text"],
-          input[type="password"],
-          input[type="datetime"],
-          input[type="datetime-local"],
-          input[type="date"],
-          input[type="month"],
-          input[type="time"],
-          input[type="week"],
-          input[type="number"],
-          input[type="email"],
-          input[type="url"],
-          input[type="search"],
-          input[type="tel"],
-          input[type="color"] {
-            font-size: 16px !important;
-          }
-        }
-
-        /* Mobile landscape adjustments */
-        @media screen and (max-height: 500px) and (orientation: landscape) {
-          .chat-messages {
-            padding: 0.5rem !important;
-          }
-          .chat-input-form {
-            padding: 0.5rem !important;
-            min-height: 60px !important;
-          }
-          .chat-header {
-            min-height: 50px !important;
-            padding: 0.75rem 1rem !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };

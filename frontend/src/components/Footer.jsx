@@ -164,7 +164,7 @@ const Footer = () => {
               📞 +1 (555) 123-4567
             </div>
             <div style={{...linkStyle, cursor: "default"}}>
-              📍 San Francisco, CA
+              📍 NIT Silchar
             </div>
           </div>
         </div>
