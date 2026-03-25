@@ -104,5 +104,8 @@ model BotMemory {
   conversationHistory Json?
   recentTopics        Json?
   emotionalState      String?
+  importantDates      Json?     // ✅ ADD
+  emotionalCues       String?   // ✅ ADD
+  interests           Json?     // ✅ ADD (you are extracting this too)
   updatedAt           DateTime     @updatedAt
 }
